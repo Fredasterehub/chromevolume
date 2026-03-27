@@ -163,8 +163,8 @@ async function handleStreamInit(msg) {
     freqData = new Uint8Array(chain.analyser.frequencyBinCount);
     vuCanvas16 = new OffscreenCanvas(16, 16);
     vuCanvas32 = new OffscreenCanvas(32, 32);
-    vuCtx16 = vuCanvas16.getContext('2d');
-    vuCtx32 = vuCanvas32.getContext('2d');
+    vuCtx16 = vuCanvas16.getContext('2d', { willReadFrequently: true });
+    vuCtx32 = vuCanvas32.getContext('2d', { willReadFrequently: true });
     source.connect(chain.gainNode);
     chain.analyser.connect(audioCtx.destination);
     chain.gainNode.gain.value = currentGain;
