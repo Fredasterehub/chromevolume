@@ -156,7 +156,7 @@ function drawPopupVu(data) {
   vuMeterCtx.clearRect(0, 0, w, h);
 
   // Dark background fill
-  vuMeterCtx.fillStyle = '#1a1a1e';
+  vuMeterCtx.fillStyle = '#f5f3f0';
   vuMeterCtx.beginPath();
   vuMeterCtx.roundRect(0, 0, w, h, 2);
   vuMeterCtx.fill();
