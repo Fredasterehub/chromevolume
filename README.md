@@ -164,5 +164,5 @@ The interface follows ***Ma*** — the Japanese concept of negative space. Empti
 <p align="center">
   <sub>🎵 Made for people who just want it louder.</sub>
   <br />
-  <sub>Built with <a href="https://github.com/Fredasterehub/kiln"><strong>Kiln</strong></a></sub>
+  <sub><a href="https://github.com/Fredasterehub/kiln">Built with <strong>Kiln</strong></a></sub>
 </p>
