@@ -90,6 +90,10 @@ chrome.runtime.onMessage.addListener(function (msg, sender, sendResponse) {
     activeState.gain = 1.0;
   }
 
+  if (isOffscreen && msg.type === 'VU_UPDATE') {
+    void chrome.action.setIcon({ imageData: msg.imageData });
+  }
+
   if (isOffscreen && msg.type === 'DRM_WARNING') {
     chrome.runtime.sendMessage({ type: 'DRM_WARNING' });
   }

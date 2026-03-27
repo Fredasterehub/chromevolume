@@ -70,7 +70,8 @@ function startVuLoop() {
     drawVuIcon(vuCanvas16, vuCtx16, 16, freqData, 8);
     drawVuIcon(vuCanvas32, vuCtx32, 32, freqData, 8);
 
-    chrome.action.setIcon({
+    chrome.runtime.sendMessage({
+      type: 'VU_UPDATE',
       imageData: {
         16: vuCtx16.getImageData(0, 0, 16, 16),
         32: vuCtx32.getImageData(0, 0, 32, 32)
