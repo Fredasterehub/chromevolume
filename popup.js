@@ -161,27 +161,12 @@ function drawPopupVu(data) {
   vuMeterCtx.roundRect(0, 0, w, h, 2);
   vuMeterCtx.fill();
 
-  // Find overall peak to determine how many bars should be active
-  var peak = 0;
-  for (var j = 0; j < data.length; j += 1) {
-    if (data[j] > peak) peak = data[j];
-  }
-  var peakNorm = Math.pow(peak / 255, 2.0);
-  var litCount = Math.round(peakNorm * numBars);
-
   for (i = 0; i < numBars; i += 1) {
     raw = popupMapBin(data, i, numBars) / 255;
-    var target;
-    if (i < litCount) {
-      target = 0.5 + peakNorm * 0.3 + raw * 0.2;
-      if (target > 1) target = 1;
+    if (raw > popupSmoothed[i]) {
+      popupSmoothed[i] += (raw - popupSmoothed[i]) * POPUP_SMOOTH_RISE;
     } else {
-      target = raw * 0.15;
-    }
-    if (target > popupSmoothed[i]) {
-      popupSmoothed[i] += (target - popupSmoothed[i]) * POPUP_SMOOTH_RISE;
-    } else {
-      popupSmoothed[i] += (target - popupSmoothed[i]) * POPUP_SMOOTH_FALL;
+      popupSmoothed[i] += (raw - popupSmoothed[i]) * POPUP_SMOOTH_FALL;
     }
     level = popupSmoothed[i];
 
