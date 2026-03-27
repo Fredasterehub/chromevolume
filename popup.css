@@ -88,8 +88,7 @@ input[type="range"]:focus-visible::-webkit-slider-thumb {
   width: 192px;
   height: 24px;
   border-radius: 3px;
-  background: var(--cv-slider-track);
-  opacity: 0.85;
+  background: #1a1a1a;
 }
 
 #status {

@@ -93,29 +93,37 @@ document.addEventListener('DOMContentLoaded', async function () {
 var vuMeterCanvas = document.getElementById('vu-meter');
 var vuMeterCtx = vuMeterCanvas.getContext('2d');
 
+var POPUP_BAR_HUES = [120, 120, 60, 60, 30, 30, 0, 0];
+
 function drawPopupVu(data) {
   var numBars = 8;
-  var segmentsPerBar = 4;
-  var segmentGap = 1;
+  var gap = 2;
   var w = vuMeterCanvas.width;
   var h = vuMeterCanvas.height;
-  var barHeight = h / numBars;
-  var segmentWidth = (w - segmentGap * (segmentsPerBar - 1)) / segmentsPerBar;
+  var barWidth = (w - gap * (numBars - 1)) / numBars;
+  var peak = 0;
+  var i, litBars, hue;
+
+  for (i = 0; i < data.length; i += 1) {
+    if (data[i] > peak) {
+      peak = data[i];
+    }
+  }
+
+  litBars = Math.round((peak / 255) * numBars);
 
   vuMeterCtx.clearRect(0, 0, w, h);
 
-  for (var barIndex = 0; barIndex < numBars; barIndex += 1) {
-    var sampleIndex = barIndex * 4;
-    var barValue = sampleIndex < data.length ? data[sampleIndex] : 0;
-    var litSegments = Math.round((barValue / 255) * segmentsPerBar);
-    var barY = barIndex * barHeight;
-    var hue = Math.round((barIndex / (numBars - 1)) * 120);
-
-    for (var s = 0; s < litSegments; s += 1) {
-      var segX = s * (segmentWidth + segmentGap);
-      vuMeterCtx.fillStyle = 'hsl(' + hue + ', 100%, 45%)';
-      vuMeterCtx.fillRect(segX, barY, segmentWidth, barHeight);
+  for (i = 0; i < numBars; i += 1) {
+    var x = Math.round(i * (barWidth + gap));
+    var bw = Math.round(barWidth);
+    hue = POPUP_BAR_HUES[i];
+    if (i < litBars) {
+      vuMeterCtx.fillStyle = 'hsl(' + hue + ', 100%, 50%)';
+    } else {
+      vuMeterCtx.fillStyle = 'hsl(' + hue + ', 100%, 11%)';
     }
+    vuMeterCtx.fillRect(x, 0, bw, h);
   }
 }
 

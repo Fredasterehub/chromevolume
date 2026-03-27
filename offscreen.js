@@ -28,29 +28,35 @@ function isFreqDataSilent() {
   return true;
 }
 
+var BAR_HUES = [120, 120, 60, 60, 30, 30, 0, 0];
+
 function drawVuIcon(canvas, ctx, size, data, numBars) {
   var bars = numBars === undefined ? 8 : numBars;
-  var segmentsPerBar = 4;
-  var segmentGap = 1;
-  var barHeight = size / bars;
-  var segmentWidth = (size - segmentGap * (segmentsPerBar - 1)) / segmentsPerBar;
-  var barIndex;
+  var gap = 1;
+  var barWidth = (size - gap * (bars - 1)) / bars;
+  var peak = 0;
+  var i, litBars, hue;
+
+  for (i = 0; i < data.length; i += 1) {
+    if (data[i] > peak) {
+      peak = data[i];
+    }
+  }
+
+  litBars = Math.round((peak / 255) * bars);
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  for (barIndex = 0; barIndex < bars; barIndex += 1) {
-    var sampleIndex = barIndex * 4;
-    var barValue = sampleIndex < data.length ? data[sampleIndex] : 0;
-    var litSegments = Math.round((barValue / 255) * segmentsPerBar);
-    var barY = barIndex * barHeight;
-    var hue = Math.round((barIndex / (bars - 1)) * 120);
-    var s;
-
-    for (s = 0; s < litSegments; s += 1) {
-      var segX = s * (segmentWidth + segmentGap);
-      ctx.fillStyle = 'hsl(' + hue + ', 100%, 45%)';
-      ctx.fillRect(segX, barY, segmentWidth, barHeight);
+  for (i = 0; i < bars; i += 1) {
+    var x = Math.round(i * (barWidth + gap));
+    var bw = Math.round(barWidth);
+    hue = BAR_HUES[i];
+    if (i < litBars) {
+      ctx.fillStyle = 'hsl(' + hue + ', 100%, 50%)';
+    } else {
+      ctx.fillStyle = 'hsl(' + hue + ', 100%, 11%)';
     }
+    ctx.fillRect(x, 0, bw, size);
   }
 }
 
