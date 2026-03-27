@@ -48,8 +48,8 @@ var BAR_COLORS = [
 
 // Smoothed bar levels for fluid animation
 var smoothedLevels = new Float32Array(NUM_BARS);
-var SMOOTH_RISE = 0.45;
-var SMOOTH_FALL = 0.18;
+var SMOOTH_RISE = 0.6;
+var SMOOTH_FALL = 0.25;
 var DIM_SAT_FACTOR = 0.25;
 
 function mapFreqBinsToBar(data, barIndex, numBars) {
@@ -80,30 +80,24 @@ function updateSmoothedLevels(data, numBars) {
 
 function drawVuIcon(canvas, ctx, size, numBars) {
   var bars = numBars === undefined ? NUM_BARS : numBars;
-  var gap = 1;
-  var totalGaps = gap * (bars - 1);
-  var barWidth = (size - totalGaps) / bars;
-  var i, c, level, lit;
+  var barWidth = size / bars;
+  var i, c, level;
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   for (i = 0; i < bars; i += 1) {
     level = smoothedLevels[i];
-    lit = level > 0.08;
-
-    var x = Math.round(i * (barWidth + gap));
-    var bw = Math.round((i + 1) * (barWidth + gap) - gap) - x;
     c = BAR_COLORS[i] || BAR_COLORS[BAR_COLORS.length - 1];
 
-    if (lit) {
-      var brightness = c.lLit + (level * 12);
-      var sat = c.s + (level * 8);
-      if (sat > 100) sat = 100;
-      if (brightness > 70) brightness = 70;
-      ctx.fillStyle = 'hsl(' + c.h + ',' + sat + '%,' + brightness + '%)';
-    } else {
-      ctx.fillStyle = 'hsl(' + c.h + ',' + Math.round(c.s * DIM_SAT_FACTOR) + '%,' + c.lDim + '%)';
-    }
+    var x = Math.round(i * barWidth);
+    var bw = Math.round((i + 1) * barWidth) - x;
+
+    // Continuous brightness: dim floor → full intensity based on level
+    var brightness = c.lDim + level * (c.lLit + 20 - c.lDim);
+    var sat = Math.round(c.s * DIM_SAT_FACTOR + level * c.s * (1 - DIM_SAT_FACTOR));
+    if (brightness > 65) brightness = 65;
+    if (sat > 100) sat = 100;
+    ctx.fillStyle = 'hsl(' + c.h + ',' + sat + '%,' + brightness + '%)';
     ctx.fillRect(x, 0, bw, size);
   }
 }

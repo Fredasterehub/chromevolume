@@ -112,8 +112,8 @@ var POPUP_BAR_COLORS = [
 ];
 
 var popupSmoothed = new Float32Array(POPUP_NUM_BARS);
-var POPUP_SMOOTH_RISE = 0.50;
-var POPUP_SMOOTH_FALL = 0.15;
+var POPUP_SMOOTH_RISE = 0.65;
+var POPUP_SMOOTH_FALL = 0.3;
 var POPUP_DIM_SAT_FACTOR = 0.25;
 
 function popupMapBin(data, barIndex, numBars) {
@@ -145,21 +145,20 @@ function drawRoundedBar(ctx, x, y, w, h, radius) {
 
 function drawPopupVu(data) {
   var numBars = POPUP_NUM_BARS;
-  var gap = 1.5;
   var w = vuMeterCanvas.width;
   var h = vuMeterCanvas.height;
-  var pad = 3;
+  var pad = 2;
   var innerW = w - pad * 2;
-  var barWidth = (innerW - gap * (numBars - 1)) / numBars;
-  var barRadius = 2;
-  var i, c, raw, level, lit;
+  var barWidth = innerW / numBars;
+  var barRadius = 1.5;
+  var i, c, raw, level;
 
   vuMeterCtx.clearRect(0, 0, w, h);
 
   // Dark background fill
   vuMeterCtx.fillStyle = '#1a1a1e';
   vuMeterCtx.beginPath();
-  vuMeterCtx.roundRect(0, 0, w, h, 3);
+  vuMeterCtx.roundRect(0, 0, w, h, 2);
   vuMeterCtx.fill();
 
   for (i = 0; i < numBars; i += 1) {
@@ -171,43 +170,26 @@ function drawPopupVu(data) {
       popupSmoothed[i] += (raw - popupSmoothed[i]) * POPUP_SMOOTH_FALL;
     }
     level = popupSmoothed[i];
-    lit = level > 0.08;
 
-    var x = pad + Math.round(i * (barWidth + gap));
-    var bw = Math.round((i + 1) * (barWidth + gap) - gap) - Math.round(i * (barWidth + gap));
+    var x = pad + Math.round(i * barWidth);
+    var bw = Math.round((i + 1) * barWidth) - Math.round(i * barWidth);
     c = POPUP_BAR_COLORS[i] || POPUP_BAR_COLORS[POPUP_BAR_COLORS.length - 1];
 
-    if (lit) {
-      var brightness = c.lLit + (level * 14);
-      var sat = c.s + (level * 10);
-      if (sat > 100) sat = 100;
-      if (brightness > 72) brightness = 72;
+    // Continuous brightness driven by level — no on/off threshold
+    var brightness = c.lDim + level * (c.lLit + 20 - c.lDim);
+    var sat = Math.round(c.s * POPUP_DIM_SAT_FACTOR + level * c.s * (1 - POPUP_DIM_SAT_FACTOR));
+    if (brightness > 65) brightness = 65;
+    if (sat > 100) sat = 100;
 
-      // Glow layer — soft bloom behind the bar
-      vuMeterCtx.save();
-      vuMeterCtx.shadowColor = 'hsla(' + c.h + ',' + sat + '%,' + (brightness + 10) + '%,' + (0.25 + level * 0.35) + ')';
-      vuMeterCtx.shadowBlur = 5 + level * 5;
-      vuMeterCtx.shadowOffsetX = 0;
-      vuMeterCtx.shadowOffsetY = 0;
-      vuMeterCtx.fillStyle = 'hsl(' + c.h + ',' + sat + '%,' + brightness + '%)';
-      drawRoundedBar(vuMeterCtx, x, 3, bw, h - 6, barRadius);
-      vuMeterCtx.restore();
-
-      // Solid bar on top (no shadow) for crisp LED look
-      vuMeterCtx.fillStyle = 'hsl(' + c.h + ',' + sat + '%,' + brightness + '%)';
-      drawRoundedBar(vuMeterCtx, x, 3, bw, h - 6, barRadius);
-
-      // Specular highlight — narrow gloss at bar top
-      var hlGrad = vuMeterCtx.createLinearGradient(x, 3, x, 3 + (h - 6) * 0.18);
-      hlGrad.addColorStop(0, 'hsla(' + c.h + ',' + Math.round(sat * 0.6) + '%,90%,0.22)');
-      hlGrad.addColorStop(1, 'hsla(' + c.h + ',' + Math.round(sat * 0.6) + '%,90%,0)');
-      vuMeterCtx.fillStyle = hlGrad;
-      drawRoundedBar(vuMeterCtx, x, 3, bw, h - 6, barRadius);
-    } else {
-      // Dim unlit LED
-      vuMeterCtx.fillStyle = 'hsl(' + c.h + ',' + Math.round(c.s * POPUP_DIM_SAT_FACTOR) + '%,' + c.lDim + '%)';
-      drawRoundedBar(vuMeterCtx, x, 3, bw, h - 6, barRadius);
+    // Glow scales with level
+    vuMeterCtx.save();
+    if (level > 0.15) {
+      vuMeterCtx.shadowColor = 'hsla(' + c.h + ',' + sat + '%,' + (brightness + 10) + '%,' + (level * 0.4) + ')';
+      vuMeterCtx.shadowBlur = level * 6;
     }
+    vuMeterCtx.fillStyle = 'hsl(' + c.h + ',' + sat + '%,' + brightness + '%)';
+    drawRoundedBar(vuMeterCtx, x, 2, bw, h - 4, barRadius);
+    vuMeterCtx.restore();
   }
 }
 
