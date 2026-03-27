@@ -68,12 +68,31 @@ function mapFreqBinsToBar(data, barIndex, numBars) {
 }
 
 function updateSmoothedLevels(data, numBars) {
+  // Find overall peak to determine how many bars should be active
+  var peak = 0;
+  for (var j = 0; j < data.length; j += 1) {
+    if (data[j] > peak) peak = data[j];
+  }
+  var peakNorm = peak / 255;
+  var litCount = Math.round(peakNorm * numBars);
+
   for (var i = 0; i < numBars; i += 1) {
-    var raw = mapFreqBinsToBar(data, i, numBars) / 255;
-    if (raw > smoothedLevels[i]) {
-      smoothedLevels[i] += (raw - smoothedLevels[i]) * SMOOTH_RISE;
+    // Bar is active if within the peak level range
+    // Add per-bin variation so bars still dance individually
+    var binLevel = mapFreqBinsToBar(data, i, numBars) / 255;
+    var target;
+    if (i < litCount) {
+      // Active bar: base brightness from peak, modulated by its own frequency bin
+      target = 0.5 + peakNorm * 0.3 + binLevel * 0.2;
+      if (target > 1) target = 1;
     } else {
-      smoothedLevels[i] += (raw - smoothedLevels[i]) * SMOOTH_FALL;
+      // Inactive bar: dim, with slight bin-reactive flicker
+      target = binLevel * 0.15;
+    }
+    if (target > smoothedLevels[i]) {
+      smoothedLevels[i] += (target - smoothedLevels[i]) * SMOOTH_RISE;
+    } else {
+      smoothedLevels[i] += (target - smoothedLevels[i]) * SMOOTH_FALL;
     }
   }
 }
