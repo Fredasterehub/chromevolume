@@ -28,33 +28,81 @@ function isFreqDataSilent() {
   return true;
 }
 
-var BAR_HUES = [120, 120, 60, 60, 30, 30, 0, 0];
+var NUM_BARS = 12;
 
-function drawVuIcon(canvas, ctx, size, data, numBars) {
-  var bars = numBars === undefined ? 8 : numBars;
-  var gap = 1;
-  var barWidth = (size - gap * (bars - 1)) / bars;
-  var peak = 0;
-  var i, litBars, hue;
+// Color stops: emerald green → chartreuse → gold → amber → crimson
+var BAR_COLORS = [
+  { h: 142, s: 85, lLit: 45, lDim: 10 },
+  { h: 134, s: 82, lLit: 44, lDim: 10 },
+  { h: 120, s: 80, lLit: 43, lDim: 10 },
+  { h: 96,  s: 80, lLit: 44, lDim: 9 },
+  { h: 72,  s: 85, lLit: 46, lDim: 9 },
+  { h: 54,  s: 90, lLit: 48, lDim: 10 },
+  { h: 42,  s: 92, lLit: 46, lDim: 9 },
+  { h: 32,  s: 90, lLit: 44, lDim: 9 },
+  { h: 22,  s: 88, lLit: 44, lDim: 8 },
+  { h: 12,  s: 85, lLit: 42, lDim: 8 },
+  { h: 4,   s: 82, lLit: 46, lDim: 8 },
+  { h: 0,   s: 80, lLit: 48, lDim: 8 }
+];
 
-  for (i = 0; i < data.length; i += 1) {
-    if (data[i] > peak) {
-      peak = data[i];
+// Smoothed bar levels for fluid animation
+var smoothedLevels = new Float32Array(NUM_BARS);
+var SMOOTH_RISE = 0.45;
+var SMOOTH_FALL = 0.18;
+var DIM_SAT_FACTOR = 0.25;
+
+function mapFreqBinsToBar(data, barIndex, numBars) {
+  var binCount = data.length;
+  var start = Math.floor((barIndex / numBars) * binCount);
+  var end = Math.floor(((barIndex + 1) / numBars) * binCount);
+  if (end <= start) end = start + 1;
+  if (end > binCount) end = binCount;
+  var sum = 0;
+  var count = 0;
+  for (var j = start; j < end; j += 1) {
+    sum += data[j];
+    count += 1;
+  }
+  return count > 0 ? sum / count : 0;
+}
+
+function updateSmoothedLevels(data, numBars) {
+  for (var i = 0; i < numBars; i += 1) {
+    var raw = mapFreqBinsToBar(data, i, numBars) / 255;
+    if (raw > smoothedLevels[i]) {
+      smoothedLevels[i] += (raw - smoothedLevels[i]) * SMOOTH_RISE;
+    } else {
+      smoothedLevels[i] += (raw - smoothedLevels[i]) * SMOOTH_FALL;
     }
   }
+}
 
-  litBars = Math.round((peak / 255) * bars);
+function drawVuIcon(canvas, ctx, size, numBars) {
+  var bars = numBars === undefined ? NUM_BARS : numBars;
+  var gap = 1;
+  var totalGaps = gap * (bars - 1);
+  var barWidth = (size - totalGaps) / bars;
+  var i, c, level, lit;
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   for (i = 0; i < bars; i += 1) {
+    level = smoothedLevels[i];
+    lit = level > 0.08;
+
     var x = Math.round(i * (barWidth + gap));
-    var bw = Math.round(barWidth);
-    hue = BAR_HUES[i];
-    if (i < litBars) {
-      ctx.fillStyle = 'hsl(' + hue + ', 100%, 50%)';
+    var bw = Math.round((i + 1) * (barWidth + gap) - gap) - x;
+    c = BAR_COLORS[i] || BAR_COLORS[BAR_COLORS.length - 1];
+
+    if (lit) {
+      var brightness = c.lLit + (level * 12);
+      var sat = c.s + (level * 8);
+      if (sat > 100) sat = 100;
+      if (brightness > 70) brightness = 70;
+      ctx.fillStyle = 'hsl(' + c.h + ',' + sat + '%,' + brightness + '%)';
     } else {
-      ctx.fillStyle = 'hsl(' + hue + ', 100%, 11%)';
+      ctx.fillStyle = 'hsl(' + c.h + ',' + Math.round(c.s * DIM_SAT_FACTOR) + '%,' + c.lDim + '%)';
     }
     ctx.fillRect(x, 0, bw, size);
   }
@@ -73,8 +121,9 @@ function startVuLoop() {
       return;
     }
 
-    drawVuIcon(vuCanvas16, vuCtx16, 16, freqData, 8);
-    drawVuIcon(vuCanvas32, vuCtx32, 32, freqData, 8);
+    updateSmoothedLevels(freqData, NUM_BARS);
+    drawVuIcon(vuCanvas16, vuCtx16, 16, NUM_BARS);
+    drawVuIcon(vuCanvas32, vuCtx32, 32, NUM_BARS);
 
     var raw16 = vuCtx16.getImageData(0, 0, 16, 16);
     var raw32 = vuCtx32.getImageData(0, 0, 32, 32);
@@ -86,7 +135,7 @@ function startVuLoop() {
       },
       freqBins: Array.from(freqData)
     });
-  }, 66);
+  }, 50);
 }
 
 function stopVuLoop() {

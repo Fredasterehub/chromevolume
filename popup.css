@@ -85,10 +85,10 @@ input[type="range"]:focus-visible::-webkit-slider-thumb {
 
 #vu-meter {
   display: block;
-  width: 192px;
-  height: 24px;
-  border-radius: 3px;
-  background: #1a1a1a;
+  width: 200px;
+  height: 28px;
+  border-radius: 4px;
+  background: #0d0d0f;
 }
 
 #status {
