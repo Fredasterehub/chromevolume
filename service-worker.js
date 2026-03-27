@@ -103,5 +103,5 @@ chrome.runtime.onMessage.addListener(function (msg, sender, sendResponse) {
     chrome.runtime.sendMessage({ type: 'DRM_WARNING' });
   }
 
-  return true;
+  return false;
 });
