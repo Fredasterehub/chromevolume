@@ -70,11 +70,13 @@ function startVuLoop() {
     drawVuIcon(vuCanvas16, vuCtx16, 16, freqData, 8);
     drawVuIcon(vuCanvas32, vuCtx32, 32, freqData, 8);
 
+    var raw16 = vuCtx16.getImageData(0, 0, 16, 16);
+    var raw32 = vuCtx32.getImageData(0, 0, 32, 32);
     chrome.runtime.sendMessage({
       type: 'VU_UPDATE',
       imageData: {
-        16: vuCtx16.getImageData(0, 0, 16, 16),
-        32: vuCtx32.getImageData(0, 0, 32, 32)
+        '16': { data: Array.from(raw16.data), width: 16, height: 16 },
+        '32': { data: Array.from(raw32.data), width: 32, height: 32 }
       }
     });
   }, 66);
