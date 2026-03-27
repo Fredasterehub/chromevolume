@@ -161,12 +161,26 @@ function drawPopupVu(data) {
   vuMeterCtx.roundRect(0, 0, w, h, 2);
   vuMeterCtx.fill();
 
+  var peak = 0;
+  for (var j = 0; j < data.length; j += 1) {
+    if (data[j] > peak) peak = data[j];
+  }
+  var peakNorm = Math.pow(peak / 255, 1.4);
+  var litCount = Math.round(peakNorm * numBars);
+
   for (i = 0; i < numBars; i += 1) {
     raw = popupMapBin(data, i, numBars) / 255;
-    if (raw > popupSmoothed[i]) {
-      popupSmoothed[i] += (raw - popupSmoothed[i]) * POPUP_SMOOTH_RISE;
+    var target;
+    if (i < litCount) {
+      target = raw * 0.5 + peakNorm * 0.5;
     } else {
-      popupSmoothed[i] += (raw - popupSmoothed[i]) * POPUP_SMOOTH_FALL;
+      target = raw * 0.3;
+    }
+    if (target > 1) target = 1;
+    if (target > popupSmoothed[i]) {
+      popupSmoothed[i] += (target - popupSmoothed[i]) * POPUP_SMOOTH_RISE;
+    } else {
+      popupSmoothed[i] += (target - popupSmoothed[i]) * POPUP_SMOOTH_FALL;
     }
     level = popupSmoothed[i];
 

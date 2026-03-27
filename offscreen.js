@@ -68,12 +68,28 @@ function mapFreqBinsToBar(data, barIndex, numBars) {
 }
 
 function updateSmoothedLevels(data, numBars) {
+  // Hybrid: peak sets the reach, bins add individual character
+  var peak = 0;
+  for (var j = 0; j < data.length; j += 1) {
+    if (data[j] > peak) peak = data[j];
+  }
+  var peakNorm = Math.pow(peak / 255, 1.4);
+  var litCount = Math.round(peakNorm * numBars);
+
   for (var i = 0; i < numBars; i += 1) {
-    var raw = mapFreqBinsToBar(data, i, numBars) / 255;
-    if (raw > smoothedLevels[i]) {
-      smoothedLevels[i] += (raw - smoothedLevels[i]) * SMOOTH_RISE;
+    var binLevel = mapFreqBinsToBar(data, i, numBars) / 255;
+    // Blend: 50% peak-driven, 50% bin-driven
+    var target;
+    if (i < litCount) {
+      target = binLevel * 0.5 + peakNorm * 0.5;
     } else {
-      smoothedLevels[i] += (raw - smoothedLevels[i]) * SMOOTH_FALL;
+      target = binLevel * 0.3;
+    }
+    if (target > 1) target = 1;
+    if (target > smoothedLevels[i]) {
+      smoothedLevels[i] += (target - smoothedLevels[i]) * SMOOTH_RISE;
+    } else {
+      smoothedLevels[i] += (target - smoothedLevels[i]) * SMOOTH_FALL;
     }
   }
 }
