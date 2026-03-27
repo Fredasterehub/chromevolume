@@ -1,0 +1,11 @@
+# Kiln pipeline artifacts
+.kiln/
+
+# Claude Code
+AGENTS.md
+settings.local.json
+
+# Packed extension
+*.crx
+*.pem
+*.zip

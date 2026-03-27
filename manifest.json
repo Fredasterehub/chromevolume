@@ -1,0 +1,13 @@
+{
+  "manifest_version": 3,
+  "name": "ChromeVolume",
+  "version": "1.0.0",
+  "description": "Clean audio amplification beyond 100%. No bloat, no gimmicks.",
+  "permissions": ["tabCapture", "offscreen"],
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": { "16": "icons/icon-16.png", "32": "icons/icon-32.png", "48": "icons/icon-48.png", "128": "icons/icon-128.png" }
+  },
+  "background": { "service_worker": "service-worker.js" },
+  "icons": { "16": "icons/icon-16.png", "32": "icons/icon-32.png", "48": "icons/icon-48.png", "128": "icons/icon-128.png" }
+}
