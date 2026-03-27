@@ -166,7 +166,7 @@ function drawPopupVu(data) {
   for (var j = 0; j < data.length; j += 1) {
     if (data[j] > peak) peak = data[j];
   }
-  var peakNorm = peak / 255;
+  var peakNorm = Math.pow(peak / 255, 2.0);
   var litCount = Math.round(peakNorm * numBars);
 
   for (i = 0; i < numBars; i += 1) {
