@@ -83,6 +83,15 @@ input[type="range"]:focus-visible::-webkit-slider-thumb {
   color: var(--cv-arrow-hover);
 }
 
+#vu-meter {
+  display: block;
+  width: 192px;
+  height: 24px;
+  border-radius: 3px;
+  background: var(--cv-slider-track);
+  opacity: 0.85;
+}
+
 #status {
   font-size: 11px;
   color: var(--cv-text-muted);

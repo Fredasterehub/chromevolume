@@ -32,8 +32,8 @@ function drawVuIcon(canvas, ctx, size, data, numBars) {
   var bars = numBars === undefined ? 8 : numBars;
   var segmentsPerBar = 4;
   var segmentGap = 1;
-  var barWidth = size / bars;
-  var segmentHeight = (size - segmentGap * (segmentsPerBar - 1)) / segmentsPerBar;
+  var barHeight = size / bars;
+  var segmentWidth = (size - segmentGap * (segmentsPerBar - 1)) / segmentsPerBar;
   var barIndex;
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -42,14 +42,14 @@ function drawVuIcon(canvas, ctx, size, data, numBars) {
     var sampleIndex = barIndex * 4;
     var barValue = sampleIndex < data.length ? data[sampleIndex] : 0;
     var litSegments = Math.round((barValue / 255) * segmentsPerBar);
+    var barY = barIndex * barHeight;
+    var hue = Math.round((barIndex / (bars - 1)) * 120);
     var s;
 
     for (s = 0; s < litSegments; s += 1) {
-      var segmentRatio = s / (segmentsPerBar - 1);
-      var hue = 120 - Math.round(segmentRatio * 120);
-      var segY = size - (s + 1) * segmentHeight - s * segmentGap;
+      var segX = s * (segmentWidth + segmentGap);
       ctx.fillStyle = 'hsl(' + hue + ', 100%, 45%)';
-      ctx.fillRect(barIndex * barWidth, segY, barWidth, segmentHeight);
+      ctx.fillRect(segX, barY, segmentWidth, barHeight);
     }
   }
 }
@@ -77,7 +77,8 @@ function startVuLoop() {
       imageData: {
         '16': { data: Array.from(raw16.data), width: 16, height: 16 },
         '32': { data: Array.from(raw32.data), width: 32, height: 32 }
-      }
+      },
+      freqBins: Array.from(freqData)
     });
   }, 66);
 }

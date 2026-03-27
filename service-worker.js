@@ -94,6 +94,9 @@ chrome.runtime.onMessage.addListener(function (msg, sender, sendResponse) {
     var img16 = new ImageData(new Uint8ClampedArray(msg.imageData['16'].data), 16, 16);
     var img32 = new ImageData(new Uint8ClampedArray(msg.imageData['32'].data), 32, 32);
     void chrome.action.setIcon({ imageData: { '16': img16, '32': img32 } });
+    if (msg.freqBins) {
+      chrome.runtime.sendMessage({ type: 'VU_DATA', freqBins: msg.freqBins });
+    }
   }
 
   if (isOffscreen && msg.type === 'DRM_WARNING') {

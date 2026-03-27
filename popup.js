@@ -90,6 +90,35 @@ document.addEventListener('DOMContentLoaded', async function () {
   });
 });
 
+var vuMeterCanvas = document.getElementById('vu-meter');
+var vuMeterCtx = vuMeterCanvas.getContext('2d');
+
+function drawPopupVu(data) {
+  var numBars = 8;
+  var segmentsPerBar = 4;
+  var segmentGap = 1;
+  var w = vuMeterCanvas.width;
+  var h = vuMeterCanvas.height;
+  var barHeight = h / numBars;
+  var segmentWidth = (w - segmentGap * (segmentsPerBar - 1)) / segmentsPerBar;
+
+  vuMeterCtx.clearRect(0, 0, w, h);
+
+  for (var barIndex = 0; barIndex < numBars; barIndex += 1) {
+    var sampleIndex = barIndex * 4;
+    var barValue = sampleIndex < data.length ? data[sampleIndex] : 0;
+    var litSegments = Math.round((barValue / 255) * segmentsPerBar);
+    var barY = barIndex * barHeight;
+    var hue = Math.round((barIndex / (numBars - 1)) * 120);
+
+    for (var s = 0; s < litSegments; s += 1) {
+      var segX = s * (segmentWidth + segmentGap);
+      vuMeterCtx.fillStyle = 'hsl(' + hue + ', 100%, 45%)';
+      vuMeterCtx.fillRect(segX, barY, segmentWidth, barHeight);
+    }
+  }
+}
+
 // Listen for STATE broadcasts (e.g. after STREAM_READY)
 chrome.runtime.onMessage.addListener(function (msg) {
   if (msg.type === 'STATE' && msg.active) {
@@ -97,6 +126,10 @@ chrome.runtime.onMessage.addListener(function (msg) {
     slider.value = val;
     display.textContent = val + '%';
     status.textContent = '';
+  }
+
+  if (msg.type === 'VU_DATA' && msg.freqBins) {
+    drawPopupVu(msg.freqBins);
   }
 
   if (msg.type === 'DRM_WARNING') {
