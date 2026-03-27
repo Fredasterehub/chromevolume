@@ -145,10 +145,10 @@ function drawRoundedBar(ctx, x, y, w, h, radius) {
 
 function drawPopupVu(data) {
   var numBars = POPUP_NUM_BARS;
-  var gap = 3;
+  var gap = 1.5;
   var w = vuMeterCanvas.width;
   var h = vuMeterCanvas.height;
-  var pad = 4;
+  var pad = 3;
   var innerW = w - pad * 2;
   var barWidth = (innerW - gap * (numBars - 1)) / numBars;
   var barRadius = 2;
@@ -157,9 +157,9 @@ function drawPopupVu(data) {
   vuMeterCtx.clearRect(0, 0, w, h);
 
   // Dark background fill
-  vuMeterCtx.fillStyle = '#0d0d0f';
+  vuMeterCtx.fillStyle = '#1a1a1e';
   vuMeterCtx.beginPath();
-  vuMeterCtx.roundRect(0, 0, w, h, 4);
+  vuMeterCtx.roundRect(0, 0, w, h, 3);
   vuMeterCtx.fill();
 
   for (i = 0; i < numBars; i += 1) {

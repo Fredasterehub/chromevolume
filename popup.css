@@ -87,8 +87,8 @@ input[type="range"]:focus-visible::-webkit-slider-thumb {
   display: block;
   width: 200px;
   height: 28px;
-  border-radius: 4px;
-  background: #0d0d0f;
+  border-radius: 3px;
+  background: #1a1a1e;
 }
 
 #status {
